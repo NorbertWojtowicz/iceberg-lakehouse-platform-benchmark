@@ -5,7 +5,7 @@ object Main {
   def main(args: Array[String]): Unit = {
     val spark = SparkSession.builder()
       .appName("ECommerceDataGenerator")
-      .config("spark.hadoop.fs.s3a.endpoint", "http://10.167.190.248:9000") // Zmień na swój host/IP
+      .config("spark.hadoop.fs.s3a.endpoint", "http://10.167.190.248:9000")
       .config("spark.hadoop.fs.s3a.access.key", "admin")
       .config("spark.hadoop.fs.s3a.secret.key", "password123")
       .config("spark.hadoop.fs.s3a.path.style.access", "true")
@@ -19,7 +19,7 @@ object Main {
     val numProducts = 500000
     val numOrders = 50000000
 
-    val landingPath = "s3a://landing/"
+    val landingPath = "s3a://ecommerce-warehouse/landing/"
 
     println("Generating data to the Landing Zone...")
 
