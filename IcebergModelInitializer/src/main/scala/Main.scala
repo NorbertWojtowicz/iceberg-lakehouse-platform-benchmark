@@ -26,6 +26,8 @@ object Main {
 
 
     // Clients Table (Without partitioning - small volume)
+    spark.sql("DROP TABLE IF EXISTS customers PURGE")
+
     spark.sql("""
       CREATE TABLE IF NOT EXISTS customers (
         customer_id BIGINT,
@@ -38,6 +40,8 @@ object Main {
     """)
 
     // Products Table (Without partitioning)
+    spark.sql("DROP TABLE IF EXISTS products PURGE")
+
     spark.sql("""
       CREATE TABLE IF NOT EXISTS products (
         product_id BIGINT,
@@ -48,8 +52,9 @@ object Main {
       ) USING iceberg
     """)
 
-
     // Orders Table (Hidden Partitioning by days)
+    spark.sql("DROP TABLE IF EXISTS orders PURGE")
+
     spark.sql("""
       CREATE TABLE IF NOT EXISTS orders (
         order_id BIGINT,
@@ -67,6 +72,8 @@ object Main {
     """)
 
     // Order Items Table - Partitioning by Bucket
+    spark.sql("DROP TABLE IF EXISTS order_items PURGE")
+
     spark.sql("""
       CREATE TABLE IF NOT EXISTS order_items (
         item_id BIGINT,
