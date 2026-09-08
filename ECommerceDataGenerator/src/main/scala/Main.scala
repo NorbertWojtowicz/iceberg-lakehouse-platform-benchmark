@@ -10,17 +10,28 @@ object Main {
       .config("spark.hadoop.fs.s3a.secret.key", "password123")
       .config("spark.hadoop.fs.s3a.path.style.access", "true")
       .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
-      .config("spark.sql.shuffle.partitions", "16")
-      .config("spark.executor.memory", "4g")
+//      .config("spark.sql.shuffle.partitions", "12")
+      .config("spark.executor.memory", "3584m")
+//      .master("local[12]")
       .master("spark://10.167.190.31:7090")
       .getOrCreate()
 
-    val numCustomers = 1000000
-    val numProducts = 500000
-    val numOrders = 50000000
+    val numCustomers = 2000000
+    val numProducts = 1500000
+//    val numOrders = 285000000 // 7G
+//    val numOrders = 206000000 // 5g
+//    val numOrders = 165100000 // 4g
+//    val numOrders = 20200000 // 1G
+//    val numOrders = 39200000 // 2G
+//    val numOrders = 97000000 - 5G
+//    val numOrders = 78000000 // 4g
+    val numOrders = 132000000 // 7G
+//    val numCustomers = 2000000
+//    val numProducts = 100000
+//    val numOrders = 10000000
 
-    val landingPath = "s3a://ecommerce-warehouse/landing/"
-
+//    val landingPath = "s3a://ecommerce-warehouse/landing/"
+    val landingPath = "file:///mnt/spark-shared/"
     println("Generating data to the Landing Zone...")
 
 //     1. Clients
@@ -56,13 +67,13 @@ object Main {
       .withColumn("status", expr("element_at(array('COMPLETED', 'PENDING', 'SHIPPED'), cast(rand() * 3 + 1 as int))"))
       .withColumn("total_amount", round(expr("rand() * 1500 + 50"), 2))
       .drop("id")
-
-    ordersDF.cache()
-
-    ordersDF.write.mode("overwrite").parquet(landingPath + "orders")
+//
+//    ordersDF.cache()
+//
+    ordersDF.repartition(12).write.mode("overwrite").parquet(landingPath + "orders_4g")
     println(s"Saved $numOrders orders.")
 
-//     4. Order Items
+////     4. Order Items
     val orderItemsDF = ordersDF.select("order_id")
       .withColumn("num_items", expr("cast(rand() * 4 + 1 as int)"))
       .withColumn("items_array", expr("sequence(1, num_items)"))
@@ -72,8 +83,8 @@ object Main {
       .withColumn("quantity", expr("cast(rand() * 3 + 1 as int)"))
       .withColumn("unit_price", round(expr("rand() * 500 + 10"), 2))
       .select("item_id", "order_id", "product_id", "quantity", "unit_price")
-
-    orderItemsDF.write.mode("overwrite").parquet(landingPath + "order_items")
+//
+    orderItemsDF.repartition(12).write.mode("overwrite").parquet(landingPath + "order_items_4g")
     println(s"Saved $numOrders order items.")
 
 

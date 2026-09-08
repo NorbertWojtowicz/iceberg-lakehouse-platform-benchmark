@@ -29,7 +29,7 @@ object Main {
     spark.sql("DROP TABLE IF EXISTS customers PURGE")
 
     spark.sql("""
-      CREATE TABLE IF NOT EXISTS customers (
+      CREATE TABLE customers (
         customer_id BIGINT,
         email STRING,
         city STRING,
@@ -43,7 +43,7 @@ object Main {
     spark.sql("DROP TABLE IF EXISTS products PURGE")
 
     spark.sql("""
-      CREATE TABLE IF NOT EXISTS products (
+      CREATE TABLE products (
         product_id BIGINT,
         name STRING,
         category STRING,
@@ -56,7 +56,7 @@ object Main {
     spark.sql("DROP TABLE IF EXISTS orders PURGE")
 
     spark.sql("""
-      CREATE TABLE IF NOT EXISTS orders (
+      CREATE TABLE orders (
         order_id BIGINT,
         customer_id BIGINT,
         order_timestamp TIMESTAMP,
@@ -67,15 +67,17 @@ object Main {
       PARTITIONED BY (days(order_timestamp))
       TBLPROPERTIES (
         'format-version' = '2',
-        'write.upsert.enabled' = 'true'
+        'write.delete.mode' = 'merge-on-read',
+        'write.update.mode' = 'merge-on-read',
+        'write.merge.mode'  = 'merge-on-read'
       )
     """)
-
+//          PARTITIONED BY (days(order_timestamp))
     // Order Items Table - Partitioning by Bucket
     spark.sql("DROP TABLE IF EXISTS order_items PURGE")
 
     spark.sql("""
-      CREATE TABLE IF NOT EXISTS order_items (
+      CREATE TABLE order_items (
         item_id BIGINT,
         order_id BIGINT,
         product_id BIGINT,
@@ -83,10 +85,15 @@ object Main {
         unit_price DECIMAL(18, 2)
       )
       USING iceberg
-      PARTITIONED BY (bucket(16, order_id))
-      TBLPROPERTIES ('format-version' = '2')
+      PARTITIONED BY (bucket(12, order_id))
+      TBLPROPERTIES (
+        'format-version' = '2',
+        'write.delete.mode' = 'merge-on-read',
+        'write.update.mode' = 'merge-on-read',
+        'write.merge.mode'  = 'merge-on-read'
+      )
     """)
-
+//    PARTITIONED BY (bucket(16, order_id))
     println("Data Model successfully initialized in the Iceberg format!")
     spark.stop()
   }
